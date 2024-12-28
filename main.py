@@ -26,8 +26,8 @@ def main():
     logging.info(f"Found {len(ah_stocks)} AH stocks")
 
     # Set date range for candlestick data
-    end_date = datetime.now().strftime("%Y-%m-%d")
-    start_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")  # Last 1 year
+    end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")  # Yesterday
+    start_date = (datetime.now() - timedelta(days=3650)).strftime("%Y-%m-%d")  # Last 10 years
     
     # Update candlestick data for all AH stocks
     logging.info(f"Updating candlestick data from {start_date} to {end_date}...")
