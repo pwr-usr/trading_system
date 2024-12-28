@@ -2,6 +2,7 @@ from .base import BaseDBManager
 from typing import List, Dict, Any
 from datetime import datetime
 import json
+import pandas as pd
 
 class StockInfoDB(BaseDBManager):
     def init_database(self):
@@ -52,10 +53,23 @@ class StockInfoDB(BaseDBManager):
                 datetime.now().isoformat()
             ))
 
-    def get_ah_stocks(self):
-        """Utility method to get all AH stocks"""
+    def get_ah_stocks(self) -> List[tuple]:
+        """Get all AH stocks as a list of tuples"""
         return self.fetch_query('''
             SELECT stock_code, name, stock_code_a 
             FROM stocks 
+            WHERE is_ah = 1
+        ''')
+
+    def get_all_stocks_df(self) -> pd.DataFrame:
+        """Get all stocks information as a DataFrame"""
+        return self.fetch_df('''
+            SELECT * FROM stocks
+        ''')
+
+    def get_ah_stocks_df(self) -> pd.DataFrame:
+        """Get all AH stocks as a DataFrame"""
+        return self.fetch_df('''
+            SELECT * FROM stocks 
             WHERE is_ah = 1
         ''')
