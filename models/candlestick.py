@@ -35,16 +35,42 @@ class CandlestickDB(BaseDBManager):
         return result[0][0] if result else None
 
     def has_data_for_date_range(self, stock_code: str, start_date: str, end_date: str, adj_type: str = "bc_rights") -> bool:
-        """Check if we have data for the given date range"""
-        result = self.fetch_query('''
+        """
+        Check if we have complete data for the given date range.
+        Returns False if:
+        - No data exists
+        - Data exists but has gaps in the date range
+        - Start date or end date is missing
+        """
+        if not stock_code or not start_date or not end_date:
+            return False
+            
+        # Get the count of business days between start and end date
+        expected_days = self.fetch_query('''
+            WITH RECURSIVE dates(date) AS (
+                SELECT ?
+                UNION ALL
+                SELECT date(date, '+1 day')
+                FROM dates
+                WHERE date < ?
+            )
+            SELECT COUNT(*) 
+            FROM dates
+            WHERE strftime('%w', date) NOT IN ('0','6')
+        ''', (start_date, end_date))[0][0]
+
+        # Get actual count of records in range
+        actual_days = self.fetch_query('''
             SELECT COUNT(*) as count
             FROM candlesticks 
             WHERE stock_code = ? 
             AND adj_type = ?
             AND date >= ?
             AND date <= ?
-        ''', (stock_code, adj_type, start_date, end_date))
-        return result[0][0] > 0 if result else False
+        ''', (stock_code, adj_type, start_date, end_date))[0][0]
+
+        # Data is complete if we have records for all expected business days
+        return actual_days >= expected_days
 
     def upsert_candlesticks(self, stock_code: str, candlesticks: List[Dict[str, Any]], adj_type: str = "bc_rights"):
         for stick in candlesticks:

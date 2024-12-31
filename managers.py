@@ -62,6 +62,7 @@ class StockDataManager:
 
     def get_all_ah_candlesticks_df_ratios(self, adj_type: str = "bc_rights") -> Dict[str, Dict[str, pd.DataFrame]]:
            raise NotImplementedError("This method is not implemented, not to move from Notebooks to managers")
+    
 
     def update_candlestick_data(self, 
                                stock_code: str, 
